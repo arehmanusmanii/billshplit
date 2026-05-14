@@ -1,6 +1,6 @@
 "use server"
 
-import { supabase } from "@/lib/supabase"
+import { supabaseAdmin as supabase } from "@/lib/supabase"
 import { Database } from "@/lib/database.types"
 
 type PaymentStatus = Database['public']['Enums']['payment_status_types']

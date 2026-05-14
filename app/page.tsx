@@ -6,7 +6,7 @@ import { getUserNetBalance, getMatchHistory } from "@/lib/actions/profile";
 // Dummy user ID for testing since we don't have an active auth session hooked up to the UI yet.
 // In a real app, you'd get this from `const supabase = createServerComponentClient({ cookies })`
 // and `const { data: { session } } = await supabase.auth.getSession()`
-const DUMMY_USER_ID = "00000000-0000-0000-0000-000000000000"; 
+import { DUMMY_USER_ID } from "@/lib/constants";
 
 export default async function Home() {
   let netBalance = 0;

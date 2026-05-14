@@ -3,7 +3,8 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { createExpense } from "@/lib/actions/expense";
-import { ensureDummyUsers } from "@/lib/actions/seed";
+import { getFriends } from "@/lib/actions/seed";
+import { DUMMY_USER_ID } from "@/lib/constants";
 
 interface ParsedItem {
   id: string;
@@ -28,7 +29,7 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
 
-  const LEADER_ID = "00000000-0000-0000-0000-000000000000";
+  const LEADER_ID = DUMMY_USER_ID;
 
   useEffect(() => {
     // Load items from session storage

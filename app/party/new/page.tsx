@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createParty } from "@/lib/actions/party";
 
-const DUMMY_USER_ID = "00000000-0000-0000-0000-000000000000";
+import { DUMMY_USER_ID } from "@/lib/constants";
 
 export default function NewPartyPage() {
   const [name, setName] = useState("");

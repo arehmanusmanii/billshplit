@@ -44,8 +44,8 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
       setItemAssignments(initialAssignments);
     }
 
-    // Seed and load dummy users to satisfy foreign key constraints
-    ensureDummyUsers().then(users => {
+    // Fetch existing friends from the database
+    getFriends().then(users => {
       setMembers(users);
       setInitializing(false);
     });
@@ -172,6 +172,10 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
           {loading ? "Calculating Math..." : isAllAssigned ? "Finalize & Split Bill" : "Assign All Items to Continue"}
         </button>
       </div>
+    </main>
+  );
+}
+
     </main>
   );
 }

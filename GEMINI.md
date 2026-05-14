@@ -40,9 +40,10 @@ A "League of Legends" style bill-splitting app. Every meal is a "Match." Users h
 
 ## Feature Roadmap for AI Generation
 1. **Lobby System:** Snapchat-style recent friend suggestions.
-2. **Auto-Split Logic:** Divide total + tax, insert into `expenses` and `splits`.
-3. **Debt Trigger:** If split is 'covered', auto-insert into `debts`.
-4. **Match History:** Query for a user's `splits` showing their specific share and status.## Business Logic Rules
+2. **Receipt Parsing (AI Vision):** Use AI (like GPT-4o Vision) to smartly parse receipts into distinct claimable items, intelligently filtering out totals/taxes/change, and expanding quantities (e.g., "2x Burgers" becomes two claimable items).
+3. **Auto-Split Logic:** Divide total + tax, insert into `expenses` and `splits`.
+4. **Debt Trigger:** If split is 'covered', auto-insert into `debts`.
+5. **Match History:** Query for a user's `splits` showing their specific share and status.## Business Logic Rules
 1. **The Leader Rule:** Default payer for any expense in a party is the `leader_id`.
 2. **The Tax Rule:** Tax is split equally across all members in the party (for MVP).
 3. **The Web of Trust:** Only the `creditor_id` can mark a debt as settled.

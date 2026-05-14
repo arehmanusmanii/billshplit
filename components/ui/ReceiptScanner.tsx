@@ -53,20 +53,41 @@ export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
 
       // Extremely basic regex to look for a price at the end of a line
       const priceRegex = /\$?(\d+\.\d{2})$/;
+      // Regex to look for quantities at the start (e.g. "2x Burger" or "2 Burger")
+      const qtyRegex = /^(\d+)[xX]?\s+(.*)/;
+
+      // Words that indicate this is not a food item
+      const ignoreKeywords = ['total', 'tax', 'tip', 'cash', 'change', 'rm', 'balance', 'due', 'subtotal', 'visa', 'mastercard', 'amount'];
 
       lines.forEach(line => {
         const match = line.match(priceRegex);
         if (match) {
-          const price = parseFloat(match[1]);
-          const name = line.replace(priceRegex, '').trim();
+          let price = parseFloat(match[1]);
+          let name = line.replace(priceRegex, '').trim();
           
-          // Filter out obvious non-items or empty names
-          if (name.length > 2 && !name.toLowerCase().includes('total') && !name.toLowerCase().includes('tax')) {
-             parsedItems.push({
-               id: `item-${idCounter++}`,
-               name,
-               price
-             });
+          const lowerName = name.toLowerCase();
+          const shouldIgnore = ignoreKeywords.some(keyword => lowerName.includes(keyword)) || name.length <= 2;
+
+          if (!shouldIgnore) {
+            // Check for quantity (e.g., if it says "2x Burgers $10.00", we want 2 items of $5.00 each)
+            const qtyMatch = name.match(qtyRegex);
+            let qty = 1;
+            
+            if (qtyMatch) {
+               qty = parseInt(qtyMatch[1], 10);
+               name = qtyMatch[2].trim();
+               // Assume the price listed is the total price for all qty, so divide it
+               price = price / qty;
+            }
+
+            // Push an individual row for every quantity so friends can claim them separately
+            for (let i = 0; i < qty; i++) {
+               parsedItems.push({
+                 id: `item-${idCounter++}`,
+                 name: qty > 1 ? `${name} (${i+1}/${qty})` : name,
+                 price: parseFloat(price.toFixed(2))
+               });
+            }
           }
         }
       });

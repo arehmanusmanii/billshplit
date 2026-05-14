@@ -49,7 +49,10 @@ export async function getRecentFriends(userId: string) {
     return []
   }
 
-  const partyIds = Array.from(new Set(recentSplits.map(s => s.expenses?.party_id).filter(Boolean)))
+  const partyIds = Array.from(new Set(recentSplits.map(s => {
+    const exp = s.expenses as any;
+    return Array.isArray(exp) ? exp[0]?.party_id : exp?.party_id;
+  }).filter(Boolean)))
 
   if (partyIds.length === 0) return []
 
@@ -74,7 +77,11 @@ export async function getRecentFriends(userId: string) {
   }
 
   // Unique members by ID
-  const uniqueMembers = Array.from(new Map(members.map(m => [m.profiles?.id, m.profiles])).values())
+  const uniqueMembers = Array.from(new Map(members.map(m => {
+    const prof = m.profiles as any;
+    const profile = Array.isArray(prof) ? prof[0] : prof;
+    return [profile?.id, profile];
+  })).values());
   
   return uniqueMembers
 }

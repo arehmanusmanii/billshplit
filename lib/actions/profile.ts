@@ -65,15 +65,22 @@ export async function getMatchHistory(userId: string, limit: number = 20) {
   if (error) throw new Error(`Failed to fetch match history: ${error.message}`);
 
   // Format the data to be easier for the UI to digest
-  return matches.map(match => ({
-    splitId: match.id,
-    userShare: match.amount_owed,
-    status: match.payment_status,
-    expenseId: match.expenses?.id,
-    restaurantName: match.expenses?.restaurant_name,
-    totalBill: match.expenses?.amount,
-    date: match.expenses?.created_at,
-    payerId: match.expenses?.paid_by,
-    partyName: match.expenses?.partys?.name || 'Unknown Party'
-  }));
+  return matches.map(match => {
+    const exp = match.expenses as any;
+    const expense = Array.isArray(exp) ? exp[0] : exp;
+    const party = expense?.partys;
+    const partyName = Array.isArray(party) ? party[0]?.name : party?.name;
+
+    return {
+      splitId: match.id,
+      userShare: match.amount_owed,
+      status: match.payment_status,
+      expenseId: expense?.id,
+      restaurantName: expense?.restaurant_name,
+      totalBill: expense?.amount,
+      date: expense?.created_at,
+      payerId: expense?.paid_by,
+      partyName: partyName || 'Unknown Party'
+    };
+  });
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { BalanceCard } from "@/components/ui/BalanceCard";
 import { MatchHistoryFeed } from "@/components/ui/MatchHistoryFeed";
 import { getUserNetBalance, getMatchHistory } from "@/lib/actions/profile";
@@ -38,6 +39,16 @@ export default async function Home() {
 
       {/* Balance Card - The "Pro" Look */}
       <BalanceCard netBalance={netBalance} />
+
+      {/* Quick Actions */}
+      <div className="mb-8">
+        <a 
+          href="/party/new" 
+          className="block w-full bg-emerald-500 hover:bg-emerald-600 text-center text-white font-bold py-4 rounded-xl transition-colors"
+        >
+          + New Match
+        </a>
+      </div>
 
       <h2 className="text-lg font-semibold mb-4">Match History</h2>
       

@@ -176,7 +176,3 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
     </main>
   );
 }
-
-    </main>
-  );
-}

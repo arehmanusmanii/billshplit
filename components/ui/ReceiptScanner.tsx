@@ -107,7 +107,6 @@ export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
       <input 
         type="file" 
         accept="image/*" 
-        capture="environment" // Suggests using the back camera on mobile
         className="hidden" 
         ref={fileInputRef}
         onChange={handleFileUpload}

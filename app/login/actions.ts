@@ -36,7 +36,7 @@ export async function signup(formData: FormData) {
   })
 
   if (error) {
-    return redirect('/login?message=Could not sign up user')
+    return redirect(`/login?message=${encodeURIComponent(error.message)}`)
   }
 
   // Create public profile using the Admin client to bypass RLS, or directly if they are logged in.

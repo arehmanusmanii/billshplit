@@ -44,7 +44,7 @@ Example format:
     let jsonString = data.response;
     
     // Safely extract JSON array if the model wrapped it in markdown
-    const jsonMatch = jsonString.match(/\[.*\]/s);
+    const jsonMatch = jsonString.match(/\[[\s\S]*\]/);
     if (jsonMatch) {
       jsonString = jsonMatch[0];
     }

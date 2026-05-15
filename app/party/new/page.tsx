@@ -1,16 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createParty } from "@/lib/actions/party";
-
-import { DUMMY_USER_ID } from "@/lib/constants";
+import { createClient } from "@/lib/supabase/client";
 
 export default function NewPartyPage() {
   const [name, setName] = useState("");
   const [restaurantName, setRestaurantName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id);
+      else router.push('/login');
+    });
+  }, [supabase.auth, router]);
 
   // TODO: Integrate Google Maps Places API here later.
   // For now, it's just a text input, but we pretend it's a searchable dropdown.
@@ -21,14 +29,14 @@ export default function NewPartyPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !restaurantName.trim()) return;
+    if (!name.trim() || !restaurantName.trim() || !userId) return;
 
     setLoading(true);
     try {
       // Pass restaurant name to party creation if we update the schema later, 
       // or we just save it in state to pass to the expense creation next.
       // For now, we just create the party.
-      const party = await createParty(name, DUMMY_USER_ID);
+      const party = await createParty(name, userId);
       
       // Navigate to the new Match/Expense details page to scan the receipt
       // We pass the restaurant name as a query param or we'd save it in context/db.

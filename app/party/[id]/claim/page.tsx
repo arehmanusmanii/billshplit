@@ -4,7 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { createExpense } from "@/lib/actions/expense";
 import { getFriends } from "@/lib/actions/seed";
-import { DUMMY_USER_ID } from "@/lib/constants";
+import { createClient } from "@/lib/supabase/client";
 
 interface ParsedItem {
   id: string;
@@ -28,10 +28,15 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
   const [tax, setTax] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
-
-  const LEADER_ID = DUMMY_USER_ID;
+  const [leaderId, setLeaderId] = useState<string | null>(null);
+  const supabase = createClient();
 
   useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setLeaderId(user.id);
+      else router.push('/login');
+    });
+
     // Load items from session storage
     const storedItems = sessionStorage.getItem(`party_${partyId}_items`);
     if (storedItems) {
@@ -81,15 +86,15 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
         consumerList.forEach(id => involvedMemberIds.add(id));
       });
       // Leader is always involved since they paid
-      involvedMemberIds.add(LEADER_ID);
+      if (leaderId) involvedMemberIds.add(leaderId);
       const partyMemberIds = Array.from(involvedMemberIds);
 
       // Assume everyone except the leader is being covered (needs to pay back)
-      const coveredUserIds = partyMemberIds.filter(id => id !== LEADER_ID);
+      const coveredUserIds = partyMemberIds.filter(id => id !== leaderId);
 
       await createExpense({
         partyId,
-        payerId: LEADER_ID,
+        payerId: leaderId!,
         restaurantName: "Scanned Restaurant", // We'd ideally pass this from the previous page
         items: expenseItems,
         totalTax: taxAmount,

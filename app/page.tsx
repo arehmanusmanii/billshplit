@@ -2,21 +2,26 @@ import Link from "next/link";
 import { BalanceCard } from "@/components/ui/BalanceCard";
 import { MatchHistoryFeed } from "@/components/ui/MatchHistoryFeed";
 import { getUserNetBalance, getMatchHistory } from "@/lib/actions/profile";
-
-// Dummy user ID for testing since we don't have an active auth session hooked up to the UI yet.
-// In a real app, you'd get this from `const supabase = createServerComponentClient({ cookies })`
-// and `const { data: { session } } = await supabase.auth.getSession()`
-import { DUMMY_USER_ID } from "@/lib/constants";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { signout } from "@/app/login/actions";
 
 export default async function Home() {
   let netBalance = 0;
   let matchHistory: any[] = [];
   
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/login');
+  }
+
   try {
     // Fetch data in parallel for speed
     const [balanceData, historyData] = await Promise.all([
-      getUserNetBalance(DUMMY_USER_ID).catch(() => ({ netBalance: 0, totalOwedToUser: 0, totalUserOwes: 0 })),
-      getMatchHistory(DUMMY_USER_ID).catch(() => [])
+      getUserNetBalance(user.id).catch(() => ({ netBalance: 0, totalOwedToUser: 0, totalUserOwes: 0 })),
+      getMatchHistory(user.id).catch(() => [])
     ]);
     
     netBalance = balanceData.netBalance;
@@ -29,11 +34,16 @@ export default async function Home() {
     <main className="max-w-md mx-auto min-h-screen bg-gray-900 text-white p-6">
       <header className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Billshplit 💸</h1>
-        <div className="w-10 h-10 bg-gray-700 rounded-full border border-white/10 overflow-hidden">
-            {/* Placeholder for Avatar */}
-            <div className="w-full h-full bg-emerald-500/20 flex items-center justify-center">
-                👤
-            </div>
+        <div className="flex items-center gap-4">
+          <form action={signout}>
+            <button className="text-sm text-gray-400 hover:text-white">Sign Out</button>
+          </form>
+          <div className="w-10 h-10 bg-gray-700 rounded-full border border-white/10 overflow-hidden">
+              {/* Placeholder for Avatar */}
+              <div className="w-full h-full bg-emerald-500/20 flex items-center justify-center">
+                  👤
+              </div>
+          </div>
         </div>
       </header>
 

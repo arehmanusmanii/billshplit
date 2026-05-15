@@ -18,16 +18,46 @@ export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
   const [statusText, setStatusText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const compressImage = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 1000; // Resize to max 1000px width
+        const scaleSize = MAX_WIDTH / img.width;
+        canvas.width = MAX_WIDTH;
+        canvas.height = img.height * scaleSize;
+
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // Compress to JPEG with 70% quality
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(new File([blob], file.name, { type: "image/jpeg" }));
+          } else {
+            reject(new Error("Canvas to Blob failed"));
+          }
+        }, "image/jpeg", 0.7);
+      };
+      img.onerror = (err) => reject(err);
+    });
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsScanning(true);
-    setStatusText("Sending to GLM-OCR model...");
+    setStatusText("Optimizing image for AI...");
 
     try {
+      // Compress the image to prevent Ollama from crashing/timing out
+      const compressedFile = await compressImage(file);
+
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", compressedFile);
 
       setStatusText("GLM-OCR is thinking (this may take a moment)...");
       const items = await parseReceiptWithOllama(formData);

@@ -26,11 +26,12 @@ Example format:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "glm-ocr", // The model the user requested
+        model: "moondream", // Tiny, fast vision model that fits in 4GB VRAM
         prompt: prompt,
         images: [base64Image],
         stream: false,
-        format: "json", // Forces JSON output if supported by model
+        // moondream doesn't strictly support the 'json' format flag yet, 
+        // so we'll rely on the prompt instructions.
       }),
     });
 
@@ -63,8 +64,8 @@ Example format:
 
     return finalItems;
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("OCR Server Action Error:", error);
-    throw new Error("Failed to parse receipt. Is Ollama running?");
+    throw new Error(`OCR Failed: ${error.message || "Unknown error"}. Make sure Ollama is running and the model is correct.`);
   }
 }

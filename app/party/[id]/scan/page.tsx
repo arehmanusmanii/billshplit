@@ -69,6 +69,7 @@ export default function ScanReceiptPage({ params }: { params: Promise<{ id: stri
 
   const handleContinue = () => {
     sessionStorage.setItem(`party_${partyId}_items`, JSON.stringify(scannedItems));
+    sessionStorage.setItem(`party_${partyId}_restaurant`, restaurantName);
     router.push(`/party/${partyId}/claim`);
   };
 

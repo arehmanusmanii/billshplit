@@ -1,4 +1,5 @@
 import { login, signup } from './actions'
+import { GoogleSignInButton } from '@/components/ui/GoogleSignInButton'
 
 export default async function LoginPage({
   searchParams,
@@ -77,6 +78,14 @@ export default async function LoginPage({
           </button>
         </div>
       </form>
+
+      <div className="relative flex items-center my-6">
+        <div className="flex-grow border-t border-white/10"></div>
+        <span className="mx-4 text-gray-500 text-sm">or</span>
+        <div className="flex-grow border-t border-white/10"></div>
+      </div>
+
+      <GoogleSignInButton />
     </main>
   )
 }

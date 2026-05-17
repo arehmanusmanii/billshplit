@@ -7,14 +7,13 @@ interface BalanceCardProps {
 export function BalanceCard({ netBalance }: BalanceCardProps) {
   const isOwed = netBalance > 0;
   const isDebt = netBalance < 0;
-  const isEven = netBalance === 0;
 
   return (
-    <div className="bg-gray-800 p-6 rounded-3xl border border-white/10 shadow-xl mb-6">
-      <p className="text-gray-400 text-sm mb-1 uppercase tracking-wider">
+    <div className="bg-black p-6 rounded-3xl border border-black/10 shadow-sm mb-6">
+      <p className="text-white/50 text-xs mb-1 uppercase tracking-wider font-medium">
         {isOwed ? 'You are owed' : isDebt ? 'You owe' : 'All Settled Up'}
       </p>
-      <p className={`text-4xl font-bold ${isOwed ? 'text-emerald-400' : isDebt ? 'text-rose-400' : 'text-gray-300'}`}>
+      <p className={`text-4xl font-bold ${isOwed ? 'text-yellow-400' : isDebt ? 'text-rose-400' : 'text-white/60'}`}>
         ${Math.abs(netBalance).toFixed(2)}
       </p>
     </div>

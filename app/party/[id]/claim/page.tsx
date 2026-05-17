@@ -39,7 +39,6 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
       if (!user) { router.push('/login'); return; }
       setLeaderId(user.id);
 
-      // Load items & restaurant from session storage
       const storedItems = sessionStorage.getItem(`party_${partyId}_items`);
       const storedRestaurant = sessionStorage.getItem(`party_${partyId}_restaurant`);
       const storedTax = sessionStorage.getItem(`party_${partyId}_tax`);
@@ -53,13 +52,11 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
         setItemAssignments(initialAssignments);
       }
 
-      // Use recent friends first; fall back to all profiles if new user
       let memberList: Member[] = await getRecentFriends(user.id);
       if (memberList.length === 0) {
         memberList = await getFriends();
       }
 
-      // Always include the leader in the member list so they can claim items too
       const leaderInList = memberList.some(m => m.id === user.id);
       if (!leaderInList) {
         const { data: profile } = await supabase
@@ -89,7 +86,6 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
     setLoading(true);
     try {
       const taxAmount = parseFloat(tax) || 0;
-
       const expenseItems = items.map(item => ({
         itemName: item.name,
         price: item.price,
@@ -99,7 +95,6 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
       const involvedMemberIds = new Set<string>();
       Object.values(itemAssignments).forEach(list => list.forEach(id => involvedMemberIds.add(id)));
       if (leaderId) involvedMemberIds.add(leaderId);
-      const partyMemberIds = Array.from(involvedMemberIds);
 
       await createExpense({
         partyId,
@@ -107,13 +102,12 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
         restaurantName,
         items: expenseItems,
         totalTax: taxAmount,
-        partyMemberIds,
-        coveredUserIds: [], // Everyone starts as 'unpaid'; they self-report on the party page
+        partyMemberIds: Array.from(involvedMemberIds),
+        coveredUserIds: [],
       });
 
       sessionStorage.removeItem(`party_${partyId}_items`);
       sessionStorage.removeItem(`party_${partyId}_restaurant`);
-
       router.push(`/party/${partyId}`);
     } catch (error) {
       console.error("Failed to finalize expense", error);
@@ -124,7 +118,11 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
   };
 
   if (initializing) {
-    return <div className="min-h-screen bg-gray-900 text-white p-6 flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   const isAllAssigned = items.every(item => (itemAssignments[item.id]?.length || 0) > 0);
@@ -132,21 +130,21 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
   const taxAmount = parseFloat(tax) || 0;
 
   return (
-    <main className="max-w-md mx-auto min-h-screen bg-gray-900 text-white p-6 pb-24">
+    <main className="max-w-md mx-auto min-h-screen bg-gray-50 text-black p-6 pb-24">
       <header className="mb-8">
-        <button onClick={() => router.back()} className="text-gray-400 hover:text-white text-sm mb-4 block">
+        <button onClick={() => router.back()} className="text-gray-400 hover:text-black text-sm mb-4 block transition-colors">
           ← Back
         </button>
-        <h1 className="text-2xl font-bold">Who Ate What?</h1>
-        <p className="text-emerald-400 text-sm">@ {restaurantName}</p>
+        <h1 className="text-2xl font-bold text-black">Who Ate What?</h1>
+        <p className="text-yellow-600 font-medium text-sm mt-0.5">@ {restaurantName}</p>
       </header>
 
       <div className="space-y-4">
         {items.map(item => (
-          <div key={item.id} className="bg-gray-800 p-4 rounded-2xl border border-white/10">
+          <div key={item.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
             <div className="flex justify-between items-center mb-3">
-              <span className="font-medium">{item.name}</span>
-              <span className="font-mono text-emerald-400">${item.price.toFixed(2)}</span>
+              <span className="font-medium text-black">{item.name}</span>
+              <span className="font-mono text-yellow-600 font-bold">${item.price.toFixed(2)}</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {members.map(member => {
@@ -155,10 +153,10 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
                   <button
                     key={member.id}
                     onClick={() => toggleAssignment(item.id, member.id)}
-                    className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
+                    className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all ${
                       isSelected
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-gray-900 text-gray-400 border border-white/10 hover:border-white/30'
+                        ? 'bg-black text-white shadow-sm'
+                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                     }`}
                   >
                     {member.full_name?.split(' ')[0] ?? 'User'}
@@ -170,28 +168,27 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
           </div>
         ))}
 
-        <div className="bg-gray-800 p-4 rounded-2xl border border-white/10">
-          <label className="block text-sm font-medium text-gray-400 mb-2">Tax & Tip ($)</label>
+        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+          <label className="block text-sm font-medium text-gray-500 mb-2">Tax & Tip ($)</label>
           <input
             type="number"
             step="0.01"
             value={tax}
             onChange={(e) => setTax(e.target.value)}
-            className="w-full bg-gray-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-black placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all"
             placeholder="0.00"
           />
-          <p className="text-xs text-gray-500 mt-2">Split equally among everyone who ate.</p>
+          <p className="text-xs text-gray-400 mt-2">Split equally among everyone who ate.</p>
         </div>
 
-        {/* Bill summary */}
-        <div className="bg-gray-800/50 rounded-2xl border border-white/5 p-4 space-y-1 text-sm">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-1.5 text-sm">
           <div className="flex justify-between text-gray-400">
             <span>Subtotal</span><span>${subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-gray-400">
             <span>Tax & Tip</span><span>${taxAmount.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between font-bold text-white pt-2 border-t border-white/10">
+          <div className="flex justify-between font-bold text-black pt-2 border-t border-gray-100">
             <span>Total</span><span>${(subtotal + taxAmount).toFixed(2)}</span>
           </div>
         </div>
@@ -199,7 +196,7 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
         <button
           onClick={handleFinalize}
           disabled={loading || !isAllAssigned || items.length === 0}
-          className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:hover:bg-emerald-500 text-white font-bold py-4 rounded-xl transition-colors"
+          className="w-full bg-black hover:bg-zinc-800 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition-colors"
         >
           {loading
             ? "Calculating..."

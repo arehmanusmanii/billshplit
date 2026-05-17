@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { searchProfiles, followUser, unfollowUser, isFollowing, type PublicProfile } from "@/lib/actions/social"
 
@@ -23,7 +22,6 @@ export function FriendSearch({ currentUserId }: Props) {
     debounceRef.current = setTimeout(async () => {
       const found = await searchProfiles(query, currentUserId)
       setResults(found)
-      // Check follow status for each result
       const statuses = await Promise.all(found.map(p => isFollowing(currentUserId, p.id)))
       const ids = new Set(found.filter((_, i) => statuses[i]).map(p => p.id))
       setFollowingIds(ids)
@@ -52,18 +50,18 @@ export function FriendSearch({ currentUserId }: Props) {
   return (
     <div>
       <div className="relative">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
         <input
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="Search by name…"
-          className="w-full bg-gray-800 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          className="w-full bg-white border border-gray-200 rounded-2xl pl-10 pr-10 py-3 text-black placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm transition-all"
         />
         {query && (
           <button
             onClick={() => { setQuery(""); setResults([]) }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-black transition-colors text-xs"
           >
             ✕
           </button>
@@ -73,23 +71,23 @@ export function FriendSearch({ currentUserId }: Props) {
       {results.length > 0 && (
         <div className="mt-3 space-y-2">
           {results.map(person => (
-            <div key={person.id} className="flex items-center gap-3 bg-gray-800 border border-white/10 rounded-2xl p-3">
+            <div key={person.id} className="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl p-3 shadow-sm">
               <Link href={`/profile/${person.id}`} className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="w-9 h-9 rounded-full bg-emerald-500/20 flex items-center justify-center text-sm font-bold text-emerald-400 overflow-hidden flex-shrink-0">
+                <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center text-sm font-bold text-white overflow-hidden flex-shrink-0">
                   {person.avatar_url
                     ? <img src={person.avatar_url} alt="" className="w-full h-full object-cover" />
                     : (person.full_name ?? 'U')[0].toUpperCase()
                   }
                 </div>
-                <span className="font-medium truncate">{person.full_name ?? 'Unknown'}</span>
+                <span className="font-medium text-black truncate">{person.full_name ?? 'Unknown'}</span>
               </Link>
               <button
                 onClick={() => handleToggleFollow(person)}
                 disabled={loadingId === person.id}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors disabled:opacity-50 flex-shrink-0 ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all disabled:opacity-50 flex-shrink-0 ${
                   followingIds.has(person.id)
-                    ? 'bg-gray-700 text-gray-300 border border-white/20'
-                    : 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                    ? 'bg-gray-100 text-gray-500 border border-gray-200 hover:bg-gray-200'
+                    : 'bg-black hover:bg-zinc-800 text-white'
                 }`}
               >
                 {loadingId === person.id ? '...' : followingIds.has(person.id) ? 'Following' : 'Follow'}
@@ -100,7 +98,7 @@ export function FriendSearch({ currentUserId }: Props) {
       )}
 
       {query.trim() && results.length === 0 && (
-        <p className="mt-3 text-sm text-gray-500 text-center">No users found for "{query}"</p>
+        <p className="mt-3 text-sm text-gray-400 text-center">No users found for "{query}"</p>
       )}
     </div>
   )

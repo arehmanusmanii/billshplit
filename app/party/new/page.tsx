@@ -46,17 +46,17 @@ export default function NewPartyPage() {
   };
 
   return (
-    <main className="max-w-md mx-auto min-h-screen bg-gray-900 text-white p-6">
+    <main className="max-w-md mx-auto min-h-screen bg-gray-50 text-black p-6">
       <header className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">New Match 🎮</h1>
-        <button onClick={() => router.back()} className="text-gray-400 hover:text-white text-sm">
+        <h1 className="text-2xl font-bold text-black">New Match</h1>
+        <button onClick={() => router.back()} className="text-gray-400 hover:text-black text-sm transition-colors">
           Cancel
         </button>
       </header>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-400 mb-2">
+          <label htmlFor="name" className="block text-sm font-medium text-gray-500 mb-2">
             Match Name
           </label>
           <input
@@ -64,14 +64,14 @@ export default function NewPartyPage() {
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            placeholder="e.g. Pizza Night 🍕"
+            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-black placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all"
+            placeholder="e.g. Pizza Night"
             required
           />
         </div>
 
         <div>
-          <label htmlFor="restaurant" className="block text-sm font-medium text-gray-400 mb-2">
+          <label htmlFor="restaurant" className="block text-sm font-medium text-gray-500 mb-2">
             Restaurant
           </label>
           <input
@@ -79,37 +79,36 @@ export default function NewPartyPage() {
             id="restaurant"
             value={restaurantName}
             onChange={(e) => setRestaurantName(e.target.value)}
-            className="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-black placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all"
             placeholder="e.g. Joe's Pizza"
             required
           />
         </div>
 
-        {/* Frequent Squad — shown once user has match history */}
         {recentFriends.length > 0 && (
           <div>
-            <p className="text-sm font-medium text-gray-400 mb-3">Frequent Squad</p>
+            <p className="text-sm font-medium text-gray-500 mb-3">Frequent Squad</p>
             <div className="flex flex-wrap gap-2">
               {recentFriends.slice(0, 8).map(friend => (
                 <div
                   key={friend.id}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 border border-white/10 rounded-full text-sm text-gray-300"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-600 shadow-sm"
                 >
-                  <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs">
+                  <div className="w-5 h-5 rounded-full bg-yellow-400/20 flex items-center justify-center text-xs font-medium text-yellow-700">
                     {friend.full_name?.[0] ?? '?'}
                   </div>
                   {friend.full_name?.split(' ')[0] ?? 'User'}
                 </div>
               ))}
             </div>
-            <p className="text-xs text-gray-600 mt-2">People you've eaten with before. Assign items to them on the next step.</p>
+            <p className="text-xs text-gray-400 mt-2">People you've eaten with before.</p>
           </div>
         )}
 
         <button
           type="submit"
           disabled={loading || !name.trim() || !restaurantName.trim()}
-          className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:hover:bg-emerald-500 text-white font-bold py-4 rounded-xl transition-colors mt-4"
+          className="w-full bg-black hover:bg-zinc-800 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition-colors mt-2"
         >
           {loading ? "Creating..." : "Continue to Receipt Scan"}
         </button>

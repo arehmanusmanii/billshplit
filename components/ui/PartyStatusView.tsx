@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   updateSplitStatus,
   requestCover,
@@ -161,7 +162,10 @@ export function PartyStatusView({ party, expense, splits, currentUserId }: Props
                 {split.profile.fullName[0]}
               </div>
               <div>
-                <p className="font-semibold text-sm">{split.profile.fullName} <span className="text-gray-500">(You)</span></p>
+                <p className="font-semibold text-sm">
+                  <Link href={`/profile/${split.userId}`} className="hover:text-emerald-400 transition-colors">{split.profile.fullName}</Link>
+                  {' '}<span className="text-gray-500">(You)</span>
+                </p>
                 <p className="font-mono text-emerald-400 text-sm">${split.amountOwed.toFixed(2)}</p>
               </div>
             </div>
@@ -222,7 +226,9 @@ export function PartyStatusView({ party, expense, splits, currentUserId }: Props
                 </div>
                 <div>
                   <p className="font-semibold text-sm">
-                    {split.profile.fullName}
+                    <Link href={`/profile/${split.userId}`} className="hover:text-emerald-400 transition-colors">
+                      {split.profile.fullName}
+                    </Link>
                     {split.userId === party.leader_id && ' 👑'}
                   </p>
                   <p className="font-mono text-emerald-400 text-sm">${split.amountOwed.toFixed(2)}</p>

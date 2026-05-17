@@ -42,7 +42,9 @@ export default function ClaimItemsPage({ params }: { params: Promise<{ id: strin
       // Load items & restaurant from session storage
       const storedItems = sessionStorage.getItem(`party_${partyId}_items`);
       const storedRestaurant = sessionStorage.getItem(`party_${partyId}_restaurant`);
+      const storedTax = sessionStorage.getItem(`party_${partyId}_tax`);
       if (storedRestaurant) setRestaurantName(storedRestaurant);
+      if (storedTax) setTax(storedTax);
       if (storedItems) {
         const parsed = JSON.parse(storedItems);
         setItems(parsed);

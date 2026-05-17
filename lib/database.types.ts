@@ -117,6 +117,39 @@ export type Database = {
           },
         ]
       }
+      follows: {
+        Row: {
+          follower_id: string
+          followed_id: string
+          created_at: string
+        }
+        Insert: {
+          follower_id: string
+          followed_id: string
+          created_at?: string
+        }
+        Update: {
+          follower_id?: string
+          followed_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follows_followed_id_fkey"
+            columns: ["followed_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_items: {
         Row: {
           id: string

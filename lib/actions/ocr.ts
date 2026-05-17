@@ -8,19 +8,28 @@ const groq = new OpenAI({
 });
 
 const prompt = `You are a highly accurate receipt parsing AI.
-Analyze this receipt image and extract ONLY the purchased food/drink items and their individual prices.
-DO NOT include tax, tip, totals, change, or subtotal.
-If an item has a quantity like "2x Burger $10.00", split it or return the individual price if possible, or just return the item name exactly as is and the price.
-Return the result strictly as a JSON array of objects with the keys "name" (string) and "price" (number). Do not include markdown formatting or any other text.
-Example format:
-[{"name": "Burger", "price": 5.00}, {"name": "Fries", "price": 3.50}]`;
+Analyze this receipt image and extract the purchased food/drink items and their individual prices,
+AND the total tax amount if visible on the receipt.
+If an item has a quantity like "2x Burger $10.00", split it into separate items or return the item name as-is with the individual price.
+Return the result strictly as a JSON object with this exact shape. Do not include markdown formatting or any other text.
+{
+  "items": [{"name": string, "price": number}],
+  "tax": number | null
+}
+If tax, tip, or service charge is visible, include it as "tax". If not visible, use null.
+Do NOT include totals, subtotals, change, or cash amounts in items.
+Example:
+{"items": [{"name": "Burger", "price": 5.00}, {"name": "Fries", "price": 3.50}], "tax": 0.85}`;
 
-export async function parseReceiptWithGroq(formData: FormData) {
+export interface OcrResult {
+  items: { id: string; name: string; price: number }[];
+  tax: number | null;
+}
+
+export async function parseReceiptWithGroq(formData: FormData): Promise<OcrResult> {
   try {
     const file = formData.get("file") as File;
-    if (!file) {
-      throw new Error("No file provided");
-    }
+    if (!file) throw new Error("No file provided");
 
     const buffer = await file.arrayBuffer();
     const base64Image = Buffer.from(buffer).toString("base64");
@@ -42,15 +51,13 @@ export async function parseReceiptWithGroq(formData: FormData) {
 
     let jsonString = completion.choices[0]?.message?.content ?? "";
 
-    // Safely extract JSON array if the model wrapped it in markdown
-    const jsonMatch = jsonString.match(/\[[\s\S]*\]/);
-    if (jsonMatch) {
-      jsonString = jsonMatch[0];
-    }
+    // Extract JSON object, stripping any markdown fencing
+    const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+    if (jsonMatch) jsonString = jsonMatch[0];
 
-    const parsedData = JSON.parse(jsonString);
+    const parsed = JSON.parse(jsonString);
 
-    const finalItems = parsedData
+    const items = (Array.isArray(parsed.items) ? parsed.items : [])
       .filter((item: any) => item.name && typeof item.price === "number")
       .map((item: any, index: number) => ({
         id: `item-${Date.now()}-${index}`,
@@ -58,7 +65,9 @@ export async function parseReceiptWithGroq(formData: FormData) {
         price: Number(item.price),
       }));
 
-    return finalItems;
+    const tax = typeof parsed.tax === "number" ? Number(parsed.tax) : null;
+
+    return { items, tax };
   } catch (error: any) {
     console.error("OCR Server Action Error:", error);
     throw new Error(

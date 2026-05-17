@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { parseReceiptWithGroq } from "@/lib/actions/ocr";
+import { parseReceiptWithGroq, type OcrResult } from "@/lib/actions/ocr";
 
 interface ParsedItem {
   id: string;
@@ -10,7 +10,7 @@ interface ParsedItem {
 }
 
 interface ReceiptScannerProps {
-  onScanComplete: (items: ParsedItem[]) => void;
+  onScanComplete: (result: OcrResult) => void;
 }
 
 export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
@@ -24,7 +24,7 @@ export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
       img.src = URL.createObjectURL(file);
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        const MAX_WIDTH = 1000; // Resize to max 1000px width
+        const MAX_WIDTH = 1000;
         const scaleSize = MAX_WIDTH / img.width;
         canvas.width = MAX_WIDTH;
         canvas.height = img.height * scaleSize;
@@ -32,7 +32,6 @@ export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
         const ctx = canvas.getContext("2d");
         ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // Compress to JPEG with 70% quality
         canvas.toBlob((blob) => {
           if (blob) {
             resolve(new File([blob], file.name, { type: "image/jpeg" }));
@@ -53,18 +52,16 @@ export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
     setStatusText("Optimizing image for AI...");
 
     try {
-      // Compress before sending to reduce payload size
       const compressedFile = await compressImage(file);
-
       const formData = new FormData();
       formData.append("file", compressedFile);
 
       setStatusText("Reading receipt...");
-      const items = await parseReceiptWithGroq(formData);
-      
+      const result = await parseReceiptWithGroq(formData);
+
       setStatusText("Success!");
       setIsScanning(false);
-      onScanComplete(items);
+      onScanComplete(result);
     } catch (error: any) {
       console.error("OCR Error:", error);
       setStatusText(error.message || "Failed to read receipt. Please try again or add items manually.");
@@ -74,16 +71,17 @@ export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
 
   return (
     <div className="bg-gray-800 p-6 rounded-2xl border border-white/10 text-center">
-      <input 
-        type="file" 
-        accept="image/*" 
-        className="hidden" 
+      <input
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
         ref={fileInputRef}
         onChange={handleFileUpload}
       />
-      
+
       {!isScanning ? (
-        <button 
+        <button
           onClick={() => fileInputRef.current?.click()}
           className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 px-6 py-4 rounded-xl font-bold w-full flex items-center justify-center gap-2 hover:bg-emerald-500/30 transition"
         >

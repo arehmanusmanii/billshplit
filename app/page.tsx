@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import { BalanceCard } from "@/components/ui/BalanceCard";
 import { MatchHistoryFeed } from "@/components/ui/MatchHistoryFeed";
 import { getUserNetBalance, getMatchHistory } from "@/lib/actions/profile";
@@ -34,16 +35,18 @@ export default async function Home() {
     <main className="max-w-md mx-auto min-h-screen bg-gray-900 text-white p-6">
       <header className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Billshplit 💸</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <Link href="/friends" className="text-sm text-gray-400 hover:text-white">
+            Friends
+          </Link>
           <form action={signout}>
             <button className="text-sm text-gray-400 hover:text-white">Sign Out</button>
           </form>
-          <div className="w-10 h-10 bg-gray-700 rounded-full border border-white/10 overflow-hidden">
-              {/* Placeholder for Avatar */}
-              <div className="w-full h-full bg-emerald-500/20 flex items-center justify-center">
-                  👤
-              </div>
-          </div>
+          <Link href={`/profile/${user.id}`} className="w-10 h-10 bg-gray-700 rounded-full border border-white/10 overflow-hidden hover:border-emerald-500/50 transition-colors">
+            <div className="w-full h-full bg-emerald-500/20 flex items-center justify-center">
+              👤
+            </div>
+          </Link>
         </div>
       </header>
 

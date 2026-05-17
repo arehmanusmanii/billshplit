@@ -17,6 +17,7 @@ export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [statusText, setStatusText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const compressImage = (file: File): Promise<File> => {
     return new Promise((resolve, reject) => {
@@ -70,7 +71,8 @@ export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-2xl border border-white/10 text-center">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
+      {/* Camera input */}
       <input
         type="file"
         accept="image/*"
@@ -79,18 +81,34 @@ export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
         ref={fileInputRef}
         onChange={handleFileUpload}
       />
+      {/* Gallery input */}
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        ref={galleryInputRef}
+        onChange={handleFileUpload}
+      />
 
       {!isScanning ? (
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 px-6 py-4 rounded-xl font-bold w-full flex items-center justify-center gap-2 hover:bg-emerald-500/30 transition"
-        >
-          📷 Snap Receipt
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex-1 bg-black hover:bg-zinc-800 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors text-sm"
+          >
+            📷 Camera
+          </button>
+          <button
+            onClick={() => galleryInputRef.current?.click()}
+            className="flex-1 bg-white hover:bg-gray-50 text-black font-semibold py-4 rounded-xl border border-gray-200 flex items-center justify-center gap-2 transition-colors text-sm"
+          >
+            🖼️ Gallery
+          </button>
+        </div>
       ) : (
         <div className="py-4">
-          <div className="w-full bg-gray-700 rounded-full h-2 mb-2 overflow-hidden">
-            <div className="bg-emerald-500 h-full w-full animate-pulse"></div>
+          <div className="w-full bg-gray-100 rounded-full h-1.5 mb-3 overflow-hidden">
+            <div className="bg-yellow-400 h-full w-full animate-pulse"></div>
           </div>
           <p className="text-sm text-gray-400 animate-pulse">{statusText}</p>
         </div>

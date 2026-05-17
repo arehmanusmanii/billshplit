@@ -15,7 +15,7 @@ BillShplit is a modern, transparent bill-splitting application designed with a c
 - This creates a reliable ledger where your balance truly reflects your social financial standing.
 
 ### 3. Smart Receipt Parsing (AI Vision)
-- BillShplit uses AI Vision (GPT-4o) to scan receipts.
+- BillShplit uses AI Vision (Meta Llama Scout) to scan receipts.
 - It automatically identifies individual items, prices, and quantities.
 - Users can "claim" their items from the parsed list, while shared items (like appetizers) and taxes are split according to customizable logic.
 
@@ -30,7 +30,7 @@ BillShplit is a modern, transparent bill-splitting application designed with a c
 ## Technical Stack
 - **Frontend:** Next.js 14 (App Router), Tailwind CSS
 - **Backend:** Supabase (Auth, PostgreSQL, Storage)
-- **AI:** GPT-4o Vision for OCR
+- **AI:** Meta Llama Scout for OCR
 - **State Management:** TypeScript-first architecture
 
 ---

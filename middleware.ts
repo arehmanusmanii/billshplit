@@ -40,7 +40,8 @@ export async function middleware(request: NextRequest) {
     // Refresh session if expired
     const { data: { user } } = await supabase.auth.getUser()
 
-    const isAuthRoute = request.nextUrl.pathname.startsWith('/login')
+    const isAuthRoute = request.nextUrl.pathname.startsWith('/login') ||
+                        request.nextUrl.pathname.startsWith('/auth/')
 
     if (!user && !isAuthRoute) {
       // Redirect to login if unauthenticated and not already on the login page

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { parseReceiptWithOllama } from "@/lib/actions/ocr";
+import { parseReceiptWithGroq } from "@/lib/actions/ocr";
 
 interface ParsedItem {
   id: string;
@@ -53,21 +53,21 @@ export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
     setStatusText("Optimizing image for AI...");
 
     try {
-      // Compress the image to prevent Ollama from crashing/timing out
+      // Compress before sending to reduce payload size
       const compressedFile = await compressImage(file);
 
       const formData = new FormData();
       formData.append("file", compressedFile);
 
-      setStatusText("GLM-OCR is thinking (this may take a moment)...");
-      const items = await parseReceiptWithOllama(formData);
+      setStatusText("Reading receipt...");
+      const items = await parseReceiptWithGroq(formData);
       
       setStatusText("Success!");
       setIsScanning(false);
       onScanComplete(items);
     } catch (error: any) {
       console.error("OCR Error:", error);
-      setStatusText(error.message || "Failed to read receipt. Make sure Ollama is running.");
+      setStatusText(error.message || "Failed to read receipt. Please try again or add items manually.");
       setIsScanning(false);
     }
   };

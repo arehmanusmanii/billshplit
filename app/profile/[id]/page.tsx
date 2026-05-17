@@ -1,6 +1,7 @@
 import { getPublicProfile, isFollowing } from "@/lib/actions/social"
 import { createClient } from "@/lib/supabase/server"
 import { ProfileView } from "@/components/ui/ProfileView"
+import { BottomNav } from "@/components/ui/BottomNav"
 import { redirect } from "next/navigation"
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -22,11 +23,14 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     : false
 
   return (
-    <ProfileView
-      {...profileData!}
-      viewerId={user.id}
-      isOwnProfile={user.id === targetUserId}
-      initiallyFollowing={viewerIsFollowing}
-    />
+    <>
+      <ProfileView
+        {...profileData!}
+        viewerId={user.id}
+        isOwnProfile={user.id === targetUserId}
+        initiallyFollowing={viewerIsFollowing}
+      />
+      <BottomNav />
+    </>
   )
 }

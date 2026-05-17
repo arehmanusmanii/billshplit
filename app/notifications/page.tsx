@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import { getNotifications, getActiveReminders, markAllAsRead } from "@/lib/actions/notifications"
-import Link from "next/link"
+import { getNotifications, getActiveReminders } from "@/lib/actions/notifications"
 import { NotificationsView } from "@/components/ui/NotificationsView"
+import { BottomNav } from "@/components/ui/BottomNav"
 
 export default async function NotificationsPage() {
   const supabase = await createClient()
@@ -15,10 +15,13 @@ export default async function NotificationsPage() {
   ])
 
   return (
-    <NotificationsView
-      userId={user.id}
-      notifications={notifications}
-      reminders={reminders}
-    />
+    <>
+      <NotificationsView
+        userId={user.id}
+        notifications={notifications}
+        reminders={reminders}
+      />
+      <BottomNav />
+    </>
   )
 }

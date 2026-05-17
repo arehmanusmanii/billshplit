@@ -1,6 +1,7 @@
 import { getFollowing } from "@/lib/actions/social"
 import { createClient } from "@/lib/supabase/server"
 import { FriendSearch } from "@/components/ui/FriendSearch"
+import { BottomNav } from "@/components/ui/BottomNav"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
@@ -13,11 +14,9 @@ export default async function FriendsPage() {
   const following = await getFollowing(user.id).catch(() => [])
 
   return (
-    <main className="max-w-md mx-auto min-h-screen bg-gray-50 text-black p-6 pb-24">
+    <>
+    <main className="max-w-md mx-auto min-h-screen bg-gray-50 text-black px-5 pt-6 pb-28">
       <header className="mb-8">
-        <Link href="/" className="text-gray-400 hover:text-black text-sm mb-4 block transition-colors">
-          ← Dashboard
-        </Link>
         <h1 className="text-2xl font-bold text-black">Friends</h1>
         <p className="text-gray-400 text-sm mt-1">Follow people to track their stats and debts.</p>
       </header>
@@ -55,5 +54,7 @@ export default async function FriendsPage() {
         )}
       </div>
     </main>
+    <BottomNav />
+    </>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useTransition } from 'react'
+import React, { useState, useTransition, useRef } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion'
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User } from 'lucide-react'
@@ -30,6 +30,7 @@ export function LoginCard({ message }: { message?: string }) {
   const [showPassword, setShowPassword] = useState(false)
   const [focusedInput, setFocusedInput] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const googleCalledRef = useRef(false)
 
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
@@ -59,7 +60,10 @@ export function LoginCard({ message }: { message?: string }) {
     })
   }
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (googleCalledRef.current) return
+    googleCalledRef.current = true
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
       provider: 'google',

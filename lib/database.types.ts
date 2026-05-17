@@ -117,6 +117,54 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          type: string
+          title: string
+          body: string
+          is_read: boolean
+          related_party_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          type: string
+          title: string
+          body: string
+          is_read?: boolean
+          related_party_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          type?: string
+          title?: string
+          body?: string
+          is_read?: boolean
+          related_party_id?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_related_party_id_fkey"
+            columns: ["related_party_id"]
+            isOneToOne: false
+            referencedRelation: "partys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           follower_id: string

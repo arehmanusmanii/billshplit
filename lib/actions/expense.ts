@@ -2,6 +2,7 @@
 
 import { supabaseAdmin as supabase } from "@/lib/supabase"
 import { Database } from "@/lib/database.types"
+import { queueNotifications } from "@/lib/actions/notifications"
 
 type PaymentStatus = Database['public']['Enums']['payment_status_types']
 
@@ -116,6 +117,30 @@ export async function createExpense(params: {
     if (debtsError) throw new Error(`Failed to insert debts: ${debtsError.message}`);
   }
 
+  // Notify each debtor they owe money; notify payer they're owed
+  const notifs: Parameters<typeof queueNotifications>[0] = []
+  for (const userId of partyMemberIds) {
+    if (userId === payerId) continue
+    const owed = (userBaseAmounts.get(userId) ?? 0) + taxPerPerson
+    notifs.push({
+      user_id: userId,
+      type: 'you_owe',
+      title: 'You owe money',
+      body: `You owe $${owed.toFixed(2)} at ${restaurantName}`,
+      related_party_id: partyId,
+    })
+  }
+  if (partyMemberIds.filter(id => id !== payerId).length > 0) {
+    notifs.push({
+      user_id: payerId,
+      type: 'owed_to_you',
+      title: 'People owe you',
+      body: `You are owed money from your party at ${restaurantName}`,
+      related_party_id: partyId,
+    })
+  }
+  queueNotifications(notifs) // fire-and-forget
+
   return { success: true, expenseId: expense.id };
 }
 
@@ -145,6 +170,14 @@ export async function settleDebt(debtId: string, creditorId: string) {
     .single();
 
   if (updateError) throw new Error(`Failed to settle debt: ${updateError.message}`);
+
+  // Notify the debtor their debt has been marked settled
+  queueNotifications([{
+    user_id: updatedDebt.debtor_id,
+    type: 'debt_settled',
+    title: 'Debt marked settled',
+    body: `Your debt of $${updatedDebt.amount.toFixed(2)} has been marked as settled.`,
+  }])
 
   return updatedDebt;
 }

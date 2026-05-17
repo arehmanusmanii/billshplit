@@ -6,6 +6,7 @@ import { getUserNetBalance, getMatchHistory } from "@/lib/actions/profile";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { signout } from "@/app/login/actions";
+import { NotificationBell } from "@/components/ui/NotificationBell";
 
 export default async function Home() {
   let netBalance = 0;
@@ -39,6 +40,7 @@ export default async function Home() {
           <Link href="/friends" className="text-sm text-gray-400 hover:text-white">
             Friends
           </Link>
+          <NotificationBell userId={user.id} />
           <form action={signout}>
             <button className="text-sm text-gray-400 hover:text-white">Sign Out</button>
           </form>

@@ -2,6 +2,7 @@
 
 import { supabaseAdmin as supabase } from "@/lib/supabase"
 import { Database } from "@/lib/database.types"
+import { queueNotifications } from "@/lib/actions/notifications"
 
 type Party = Database['public']['Tables']['partys']['Row']
 
@@ -195,6 +196,51 @@ export async function requestCover(splitId: string, debtorId: string, creditorId
     })
 
   if (debtError) throw new Error(`Failed to create debt record: ${debtError.message}`)
+
+  // Notify both parties — fetch context for a meaningful message
+  try {
+    const { data: ctx } = await supabase
+      .from('splits')
+      .select(`
+        expenses!splits_expense_id_fkey (
+          restaurant_name,
+          party_id,
+          partys!expenses_party_id_fkey ( name )
+        )
+      `)
+      .eq('id', splitId)
+      .single()
+
+    const exp = (ctx as any)?.expenses
+    const expense = Array.isArray(exp) ? exp[0] : exp
+    const party = expense ? (Array.isArray(expense.partys) ? expense.partys[0] : expense.partys) : null
+    const where = expense?.restaurant_name ?? party?.name ?? 'a match'
+
+    const [debtorProfile, creditorProfile] = await Promise.all([
+      supabase.from('profiles').select('full_name').eq('id', debtorId).single(),
+      supabase.from('profiles').select('full_name').eq('id', creditorId).single(),
+    ])
+
+    queueNotifications([
+      {
+        user_id: creditorId,
+        type: 'cover_requested',
+        title: 'Someone needs you to cover them',
+        body: `${debtorProfile.data?.full_name ?? 'Someone'} asked you to cover $${split.amount_owed.toFixed(2)} at ${where}`,
+        related_party_id: expense?.party_id ?? null,
+      },
+      {
+        user_id: debtorId,
+        type: 'cover_received',
+        title: 'Your tab is covered',
+        body: `${creditorProfile.data?.full_name ?? 'Someone'} is covering your $${split.amount_owed.toFixed(2)} at ${where}`,
+        related_party_id: expense?.party_id ?? null,
+      },
+    ])
+  } catch (e) {
+    console.error('Cover notification error:', e)
+  }
+
   return { success: true }
 }
 
@@ -238,5 +284,25 @@ export async function confirmMatch(partyId: string, leaderId: string) {
     .eq('id', partyId)
 
   if (error) throw new Error(`Failed to confirm match: ${error.message}`)
+
+  // Notify all members that the match is now settled
+  try {
+    const { data: partyRow } = await supabase.from('partys').select('name').eq('id', partyId).single()
+    const { data: expense } = await supabase.from('expenses').select('id').eq('party_id', partyId).maybeSingle()
+    if (expense) {
+      const { data: splits } = await supabase.from('splits').select('user_id').eq('expense_id', expense.id)
+      const memberIds = (splits ?? []).map(s => s.user_id)
+      queueNotifications(memberIds.map(uid => ({
+        user_id: uid,
+        type: 'match_settled',
+        title: 'Match closed',
+        body: `"${partyRow?.name ?? 'Your party'}" has been marked as settled.`,
+        related_party_id: partyId,
+      })))
+    }
+  } catch (e) {
+    console.error('Match settled notification error:', e)
+  }
+
   return { success: true }
 }
